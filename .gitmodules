@@ -1,0 +1,3 @@
+[submodule "Bidet/lib/Arduino-IRremote"]
+	path = Bidet/lib/Arduino-IRremote
+	url = https://github.com/Arduino-IRremote/Arduino-IRremote
