@@ -1,10 +1,13 @@
 #include "main.h"
 
 class PumpController {
-    public:
-        static void toggleRunning();
+    private:
+        bool isRunning;
 
-        static void stop();
-        static void run();
-        static void run(int timeMS);
+    public:
+        void toggleRunning();
+
+        void stop();
+        void run();
+        void run(int timeMS);
 };

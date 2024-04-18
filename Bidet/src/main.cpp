@@ -5,12 +5,15 @@
 #include <IRremote.hpp>
 
 int numberCommands[] = { 12, 24, 94, 8, 28, 90, 66, 82, 74};
+PumpController controller;
 
 void handleInput(uint16_t command);
+bool contains(int array[], int value);
 
 void setup() {
     Serial.begin(9600);
     IrReceiver.begin(IR_PIN, ENABLE_LED_FEEDBACK);
+    controller = PumpController();
 }
 
 void loop() {
@@ -27,19 +30,32 @@ void handleInput(uint16_t command) {
     switch (command)
     {
         case 69:
-            PumpController::toggleRunning();
+            Serial.println("Toggle command");   
+            controller.toggleRunning();
             break;
         
         default:
+            if (!contains(numberCommands, command)) return;
+            
             for (int i = 0; i < sizeof(numberCommands) / sizeof(int); i++) {
                 if (command == numberCommands[i]) {
                     Serial.println("Number command: " + String(i));
-                    PumpController::run(i * 10000);
+                    controller.run(i * 10000);
                     break;
                 }
             }
             break;
     }
+}
+
+bool contains(int array[], int value) {
+    for (int i = 0; i < sizeof(array) / sizeof(int); i++) {
+        if (array[i] == value) {
+            Serial.println("Found value in array");
+            return true;
+        } 
+    }
+    return false;
 }
 
 /*
