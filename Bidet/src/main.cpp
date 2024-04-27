@@ -1,28 +1,28 @@
 #include "main.h"
-#include "pumpController.h"
 
-#include <Arduino.h>
 #include <IRremote.hpp>
 
-int numberCommands[] = { 12, 24, 94, 8, 28, 90, 66, 82, 74};
-PumpController controller;
+uint16_t numberCommands[] = { 12, 24, 94, 8, 28, 90, 66, 82, 74}; // 9
 
-void handleInput(uint16_t command);
-bool contains(int array[], int value);
+bool isPumpRunning = false;
+
+const int debounceDelay = 1000;
+long lastPressTime = 0;
 
 void setup() {
     Serial.begin(9600);
     IrReceiver.begin(IR_PIN, ENABLE_LED_FEEDBACK);
-    controller = PumpController();
 }
 
 void loop() {
-    if (IrReceiver.decode()) {
+    long currentTime = millis();
+    bool isDebouncing = currentTime - lastPressTime < debounceDelay;
+    if (IrReceiver.decode() && !isDebouncing) {
         Serial.println(IrReceiver.decodedIRData.command);
         handleInput(IrReceiver.decodedIRData.command);
         
         IrReceiver.resume();
-        delay(1000);
+        lastPressTime = currentTime;
     }
 }
 
@@ -31,16 +31,22 @@ void handleInput(uint16_t command) {
     {
         case 69:
             Serial.println("Toggle command");   
-            controller.toggleRunning();
+            isPumpRunning = !isPumpRunning;
+            digitalWrite(PUMP_PIN, isPumpRunning ? HIGH : LOW);
             break;
         
         default:
-            if (!contains(numberCommands, command)) return;
+            if (isPumpRunning || !contains(command)) 
+                return;
             
-            for (int i = 0; i < sizeof(numberCommands) / sizeof(int); i++) {
+            for (int i = 0; i < 9; i++) {
                 if (command == numberCommands[i]) {
                     Serial.println("Number command: " + String(i));
-                    controller.run(i * 10000);
+                    
+                    digitalWrite(PUMP_PIN, HIGH);
+                    delay(i * 10000);
+                    digitalWrite(PUMP_PIN, LOW);
+                    isPumpRunning = false;
                     break;
                 }
             }
@@ -48,9 +54,9 @@ void handleInput(uint16_t command) {
     }
 }
 
-bool contains(int array[], int value) {
-    for (int i = 0; i < sizeof(array) / sizeof(int); i++) {
-        if (array[i] == value) {
+bool contains(uint16_t value) {
+    for (int i = 0; i < 9; i++) { // nine is the count of the array
+        if (numberCommands[i] == value) {
             Serial.println("Found value in array");
             return true;
         } 
