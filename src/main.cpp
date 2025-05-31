@@ -3,8 +3,8 @@
 
 #define PUMP_PIN 2
 #define IR_PIN 3
-
 #define POWER_BTN 69 
+
 #define TIME_BTN_MULTIPLIER 1000 
 
 int timedCommands[] = { 12, 24, 94, 8, 28, 90, 66, 82, 74}; 
@@ -20,7 +20,10 @@ void setup() {
 
 void loop() {
     if (!IrReceiver.decode()) return;
-    IrReceiver.resume();
+    if (IrReceiver.decodedIRData.flags & IRDATA_FLAGS_IS_REPEAT) { 
+        IrReceiver.resume();
+        return;
+    }
 
     int *commandPtr = &IrReceiver.decodedIRData.command;
     if (*commandPtr == POWER_BTN) {
@@ -39,5 +42,6 @@ void loop() {
         }
 
 end:
-    delay(300);
+    IrReceiver.resume();
+    delay(50);
 }
