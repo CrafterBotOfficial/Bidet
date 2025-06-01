@@ -7,7 +7,7 @@
 
 #define TIME_BTN_MULTIPLIER 1000 
 
-int timedCommands[] = { 12, 24, 94, 8, 28, 90, 66, 82, 74}; 
+int timedCommands[] = { 12, 24, 94, 8, 28, 90, 66, 82, 74 }; 
 
 bool pumpState;
 int remoteInputCount = sizeof(timedCommands) / sizeof(timedCommands[0]);
